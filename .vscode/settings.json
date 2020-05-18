@@ -1,0 +1,21 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.jest": true,
+    "**/.eslintrc.js": true,
+    "**/.eslintignore": true,
+    "**/.gitignore": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.buildkite": true,
+    "**/CVS": true,
+    "**/babel.config.js": true,
+    "**/webpack.config.js": true,
+    "**/.DS_Store": true,
+    "**/.vscode": true,
+    "**/yarn.lock": true,
+    "*/tsconfig.json": true,
+    "jest.config.js": true,
+    "**/node_modules": true
+  }
+}
