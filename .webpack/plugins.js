@@ -32,7 +32,13 @@ const plugins = {
     return new EventHooksPlugin({
       afterEmit: () => {
         const template = fs.readFileSync(path.resolve(...inputDir), 'utf8')
-        const processed = processTemplate(template, templateOptions)
+        const processed = processTemplate(template, { 
+          buildID, 
+          development: args.devServer.toString(), 
+          ...args.envFile, 
+          ...args.env, 
+          ...templateOptions 
+        })
         fs.writeFileSync(path.resolve(...outputDir), processed)
       }
     })

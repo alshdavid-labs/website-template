@@ -34,12 +34,8 @@ const gui = {
       templateOptions: {
         modernScript: `modern/index.${buildID}.js`,
         modernStyle: !args.devServer ? `modern/style.${buildID}.css` : '',
-        legacyScript: `legacy/index.${buildID}.js`,
+        legacyScript: !args.devServer ? `legacy/index.${buildID}.js` : '',
         legcayStyle: !args.devServer ? `legacy/style.${buildID}.css` : '',
-        buildID, 
-        development: args.devServer.toString(), 
-        ...args.envFile, 
-        ...args.env, 
       }
     })
   ]),
