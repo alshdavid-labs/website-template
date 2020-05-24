@@ -8,6 +8,7 @@
     "**/.svn": true,
     "**/.hg": true,
     "**/.buildkite": true,
+    "**/.webpack": true,
     "**/CVS": true,
     "**/babel.config.js": true,
     "**/webpack.config.js": true,
