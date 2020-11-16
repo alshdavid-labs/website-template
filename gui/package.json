@@ -1,9 +1,0 @@
-{
-  "name": "@alshdavid/website-template",
-  "version": "1.0.0",
-  "license": "CUSTOM",
-  "dependencies": {
-    "core-js": "^3.6.5",
-    "regenerator-runtime": "^0.13.5"
-  }
-}
