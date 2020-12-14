@@ -1,93 +1,98 @@
 const path = require('path')
-const { buildID, plugins, rules, args, mode, processTasks, processArray, clean, __tmp_dirname } = require('./.webpack')
+const fs = require('fs')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { SourceMapDevToolPlugin } = require("webpack")
+const CopyPlugin = require('copy-webpack-plugin');
+const argv = require('yargs').argv
 
-clean({
-  dir: [__dirname, 'build'],
-})
-
-const __out_dirname = args.devServer ? __tmp_dirname : __dirname
-
-const gui = {
-  mode,
-  entry:  path.join(__dirname, 'gui', 'index.ts'),
-  output: {
-    filename: `modern/index.${buildID}.js`,
-    path: path.join(__out_dirname, 'build', 'gui'),
-  },
-  module: {
-    rules: [
-      rules.js(),
-      rules.ts({
-        configFile: [__dirname, 'gui', 'tsconfig.json']
-      }),
-      rules.css(),
-      rules.scss(),
-    ]
-  },
-  plugins: processArray([
-    plugins.definePlugin(),
-    plugins.copyAssets([__dirname, 'gui', 'assets']),
-    !args.devServer && plugins.cssExtract('modern/'),
-    plugins.html({
-      inputDir: [__dirname, 'gui', 'index.html'],
-      outputDir: [__out_dirname, 'build', 'gui', 'index.html'],
-      templateOptions: {
-        modernScript: `modern/index.${buildID}.js`,
-        modernStyle: !args.devServer ? `modern/style.${buildID}.css` : '',
-        legacyScript: !args.devServer ? `legacy/index.${buildID}.js` : '',
-        legcayStyle: !args.devServer ? `legacy/style.${buildID}.css` : '',
-      }
-    })
-  ]),
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-    plugins: [
-      plugins.tsConfigPaths([__dirname, 'gui', 'tsconfig.json'])
-    ]
-  },
-  devServer: {
-    contentBase: path.join(__out_dirname, 'build', 'gui'),
-    disableHostCheck: true,
-    writeToDisk: true,
-    port: 9000
-  }
+const modes = {
+  production: 'production',
+  development: 'development',
 }
 
-const gui_legacy = {
+let mode = modes.development
+
+if (argv.mode === modes.production) {
+  mode = modes.production
+  process.env.NODE_ENV = modes.production
+}
+
+const ENTRY_NAME = 'index'
+const __outdir = [__dirname, 'build']
+
+if (fs.existsSync(path.join(...__outdir))) {
+  fs.rmdirSync(path.join(...__outdir), { recursive: true })
+}
+
+const config = {
   mode,
-  entry:  [
-    path.join(__dirname, 'gui', 'index.legacy.ts'),
-    path.join(__dirname, 'gui', 'index.ts'),
-  ],
+  devtool: 'source-map',
+  entry:  {
+    [ENTRY_NAME]: path.join(__dirname, 'src', 'index.tsx'),
+  },
   output: {
-    filename: `legacy/index.${buildID}.js`,
-    path: path.join(__dirname, 'build', 'gui'),
+    filename: '[name].js',
+    path: path.join(...__outdir),
   },
   module: {
     rules: [
-      rules.js({
-        legacy: true
-      }),
-      rules.ts({
-        configFile: [__dirname, 'gui', 'tsconfig.json'], 
-        legacy: true
-      }),
-      rules.css(),
-      rules.scss(),
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader'
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: [
+          'css-loader',
+          'sass-loader',
+        ],
+      }
     ]
   },
   plugins: [
-    plugins.definePlugin(),
-    plugins.cssExtract('legacy/'),
+    new HtmlWebpackPlugin({
+      minify: false,
+      filename: 'index.html',
+      template: 'src/index.html',
+      base: '/',
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'src/assets', to: 'assets' }
+      ]
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      async: [ENTRY_NAME],
+      module: [ENTRY_NAME],
+    }),
+    new SourceMapDevToolPlugin({
+      filename: "[file].map"
+    }),
   ],
   resolve: {
-    plugins: [
-      plugins.tsConfigPaths([__dirname, 'gui', 'tsconfig.json'])
-    ]
+    extensions: ['.tsx', '.ts', '.js'],
+    mainFields: ['module', 'main'],
+    alias: {}
+  },
+  devServer: {
+    contentBase: path.join(...__outdir),
+    hot: false,
+    disableHostCheck: true,
+    port: 9000,
+    historyApiFallback: true,
+    writeToDisk: true,
+    watchContentBase: true
   }
 }
 
-module.exports = processTasks({
-  gui,
-  gui_legacy,
-})
+if (mode === modes.production) {
+  config.output.filename = '[name].[chunkhash].js'
+  config.module.rules[1].use.unshift(MiniCssExtractPlugin.loader)
+  config.plugins.push(new MiniCssExtractPlugin({ filename: '[name].[chunkhash].css' }))
+} else {
+  config.module.rules[1].use.unshift('style-loader')
+}
+
+module.exports = config
