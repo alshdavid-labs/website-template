@@ -5,6 +5,7 @@ const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { SourceMapDevToolPlugin } = require("webpack")
 const CopyPlugin = require('copy-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const argv = require('yargs').argv
 
 const modes = {
@@ -93,6 +94,10 @@ if (mode === modes.production) {
   config.plugins.push(new MiniCssExtractPlugin({ filename: '[name].[chunkhash].css' }))
 } else {
   config.module.rules[1].use.unshift('style-loader')
+}
+
+if (argv.stats) {
+  config.plugins.push(new BundleAnalyzerPlugin())
 }
 
 module.exports = config
