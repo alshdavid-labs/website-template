@@ -1,3 +1,6 @@
+// @ts-ignore
+import Worker from 'worker-loader?inline=no-fallback!./index.worker'
 import './index.scss'
 
-console.log('Hey')
+// @ts-ignore
+const worker = new Worker()
