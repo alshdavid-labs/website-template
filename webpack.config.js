@@ -1,7 +1,6 @@
 const path = require('path')
 const fs = require('fs')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { SourceMapDevToolPlugin } = require("webpack")
 const CopyPlugin = require('copy-webpack-plugin');
@@ -24,7 +23,7 @@ const ENTRY_NAME = 'index'
 const __outdir = [__dirname, 'build']
 
 if (fs.existsSync(path.join(...__outdir))) {
-  fs.rmdirSync(path.join(...__outdir), { recursive: true })
+  fs.rmSync(path.join(...__outdir), { recursive: true })
 }
 
 const config = {
@@ -57,16 +56,27 @@ const config = {
       minify: false,
       filename: 'index.html',
       template: 'src/index.html',
-      base: '/',
+      inject:'head',
     }),
+    {
+      apply(compiler) {
+        compiler.hooks.compilation.tap('ScriptAttributeInjector', (compilation) => 
+          (HtmlWebpackPlugin).getHooks(compilation).alterAssetTags.tapAsync(
+            'ScriptAttributeInjector', (data, cb) => {
+              data.assetTags.scripts = data.assetTags.scripts.map(asset => {
+                asset.attributes.type = 'module'
+                return asset
+              })
+              return cb(null, data);
+            }
+          )
+        )
+      },
+    },
     new CopyPlugin({
       patterns: [
         { from: 'src/assets', to: 'assets' }
       ]
-    }),
-    new ScriptExtHtmlWebpackPlugin({
-      async: [ENTRY_NAME],
-      module: [ENTRY_NAME],
     }),
     new SourceMapDevToolPlugin({
       filename: "[file].map"
@@ -78,20 +88,27 @@ const config = {
     alias: {}
   },
   devServer: {
-    contentBase: path.join(...__outdir),
     hot: false,
-    disableHostCheck: true,
-    port: 9000,
+    port: 8080,
     historyApiFallback: true,
-    writeToDisk: true,
-    watchContentBase: true
+    allowedHosts: 'all',
+    host: '0.0.0.0',
+    headers: [{
+      key: 'Cache-Control',
+      value: 'no-store'
+    }],
+    devMiddleware: {
+      writeToDisk: true,
+    }
   }
 }
 
 if (mode === modes.production) {
   config.output.filename = '[name].[chunkhash].js'
   config.module.rules[1].use.unshift(MiniCssExtractPlugin.loader)
-  config.plugins.push(new MiniCssExtractPlugin({ filename: '[name].[chunkhash].css' }))
+  config.plugins.push(new MiniCssExtractPlugin({ 
+    filename: '[name].[chunkhash].css',
+  }))
 } else {
   config.module.rules[1].use.unshift('style-loader')
 }
