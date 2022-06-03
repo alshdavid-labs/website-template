@@ -1,11 +1,22 @@
 const path = require('path')
 const fs = require('fs')
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { SourceMapDevToolPlugin } = require("webpack")
-const CopyPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const argv = require('yargs').argv
+
+const Args = {
+  Production: 'production',
+  Stats: '--stats',
+}
+
+
+
+const Paths = {
+  Index: path.join(__dirname, 'src', 'index.ts'),
+  Output: path.join(__dirname, 'build'),
+}
+
 
 const modes = {
   production: 'production',
@@ -14,27 +25,24 @@ const modes = {
 
 let mode = modes.development
 
-if (argv.mode === modes.production) {
+if (process.argv.includes(Args.Production)) {
   mode = modes.production
   process.env.NODE_ENV = modes.production
 }
 
-const ENTRY_NAME = 'index'
-const __outdir = [__dirname, 'build']
-
-if (fs.existsSync(path.join(...__outdir))) {
-  fs.rmSync(path.join(...__outdir), { recursive: true })
+if (fs.existsSync(Paths.Output)) {
+  fs.rmSync(Paths.Output, { recursive: true })
 }
 
 const config = {
   mode,
   devtool: 'source-map',
   entry:  {
-    [ENTRY_NAME]: path.join(__dirname, 'src', 'index.tsx'),
+    index: Paths.Index,
   },
   output: {
     filename: '[name].js',
-    path: path.join(...__outdir),
+    path: Paths.Output,
   },
   module: {
     rules: [
@@ -78,9 +86,6 @@ const config = {
         { from: 'src/assets', to: 'assets' }
       ]
     }),
-    new SourceMapDevToolPlugin({
-      filename: "[file].map"
-    }),
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
@@ -113,7 +118,7 @@ if (mode === modes.production) {
   config.module.rules[1].use.unshift('style-loader')
 }
 
-if (argv.stats) {
+if (process.argv.includes(Args.Stats)) {
   config.plugins.push(new BundleAnalyzerPlugin())
 }
 
