@@ -1,17 +1,17 @@
 {
   "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.DS_Store": true,
-    ".jest": true,
-    ".gitignore": true,
-    "node_modules": true,
-    "yarn.lock": true,
-    "jest.config.js": true,
-    "webpack.config.js": true,
-    "tsconfig.json": true,
-    ".vscode": true
+    "**/.git": false,
+    "**/.svn": false,
+    "**/.hg": false,
+    "**/CVS": false,
+    "**/.DS_Store": false,
+    ".jest": false,
+    ".gitignore": false,
+    "node_modules": false,
+    "yarn.lock": false,
+    "jest.config.js": false,
+    "webpack.config.js": false,
+    "tsconfig.json": false,
+    ".vscode": false
   }
 }
