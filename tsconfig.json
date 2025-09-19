@@ -1,17 +1,11 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "node",
     "target": "ESNext",
-    "jsx": "react",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "experimentalDecorators": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "lib": ["DOM", "ESNext"],
-    "types": []
-  },
-  "include": ["src/**/*"]
+    "strict": true,
+    "jsx": "react",
+    "jsxFactory": "h"
+  }
 }
